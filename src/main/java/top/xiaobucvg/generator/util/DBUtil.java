@@ -83,7 +83,7 @@ public class DBUtil {
     public static Map<String, String> getFieldMapper(String tableName) {
         Connection connection = getConnection();
         Map<String, String> map = new HashMap<>();
-        if (connection == null || StringUtils.isNullOrEmpty(tableName)) {
+        if (connection == null || tableName == null || "".equals(tableName)) {
             return map;
         }
         String sql = "select * from " + tableName;
