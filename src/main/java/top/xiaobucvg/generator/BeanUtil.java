@@ -2,6 +2,7 @@ package top.xiaobucvg.generator;
 
 import top.xiaobucvg.generator.converter.*;
 import top.xiaobucvg.generator.util.DBUtil;
+import top.xiaobucvg.generator.util.FieldUtil;
 import top.xiaobucvg.generator.util.PropertyUtil;
 
 import java.util.*;
@@ -11,10 +12,7 @@ public class BeanUtil {
     private static ConverterChain chain = new ConverterChain();
 
     static {
-        chain.
-                addConverter(new BigDecimalConverter(chain)).
-                addConverter(new ByteArrayConverter(chain)).
-                addConverter(new TimeConverter(chain));
+        chain.addConverter(new BigDecimalConverter(chain)).addConverter(new ByteArrayConverter(chain)).addConverter(new TimeConverter(chain));
     }
 
     public static void generate() {
@@ -25,11 +23,7 @@ public class BeanUtil {
         if ("".equals(target) || "".equals(packageInfo)) {
             throw new RuntimeException("配置文件必须同时指定bean.target和bean.package");
         }
-        if ("".equals(isSer)) {
-            isSer = "false";
-        }
-
-        BeanGenerator generator = new BeanGenerator(packageInfo, target, Boolean.getBoolean(isSer));
+        BeanGenerator generator = new BeanGenerator(packageInfo, target, isSer.equalsIgnoreCase("true"));
         List<String> tableNames = DBUtil.getTableNames();
         for (String name : tableNames) {
             BeanDescription beanDescription = getBeanDescription(name);
@@ -42,26 +36,30 @@ public class BeanUtil {
         Set<String> importClass = new HashSet<>();
         Map<String, String> beanDesFieldMap = new HashMap<>();
         Map<String, String> mapper = DBUtil.getFieldMapper(tableName);
-        beanDescription.setName(tableName);
+        beanDescription.setName(FieldUtil.firstWordToUpper(tableName));
         mapper.forEach((name, type) -> {
             String afterType = chain.convert(type);
             // 没有被任何一个转换器转换
             if (afterType == null) {
-                beanDesFieldMap.put(name, type.substring(type.lastIndexOf(".") + 1));
+                beanDesFieldMap.put(FieldUtil.convertName(name), FieldUtil.getLastField(type));
             }
             // 被转换器转换了，而且需要引入某个类
             else if (afterType.contains(".")) {
                 importClass.add(afterType);
-                beanDesFieldMap.put(name, afterType.substring(afterType.lastIndexOf(".") + 1));
+                beanDesFieldMap.put(FieldUtil.convertName(name), FieldUtil.getLastField(afterType));
             }
             // 被转换器转换了，但是不需要引入类
             else {
-                beanDesFieldMap.put(name, afterType);
+                beanDesFieldMap.put(FieldUtil.convertName(name), afterType);
             }
             chain.resetIndex();
         });
         beanDescription.setImportClasess(importClass);
         beanDescription.setFieldMapper(beanDesFieldMap);
         return beanDescription;
+    }
+
+    public static void main(String[] args) {
+        BeanUtil.generate();
     }
 }

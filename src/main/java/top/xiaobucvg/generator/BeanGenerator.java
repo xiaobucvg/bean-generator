@@ -127,6 +127,7 @@ public class BeanGenerator {
                 }
             }
         }
+        System.out.println("生成了文件：" + javaName + ".java");
     }
 
 }
