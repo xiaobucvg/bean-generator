@@ -70,6 +70,8 @@ public class DBUtil {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            closeConnection(connection);
         }
         return list;
     }
@@ -98,6 +100,8 @@ public class DBUtil {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            closeConnection(connection);
         }
         return map;
     }
