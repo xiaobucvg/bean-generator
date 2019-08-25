@@ -58,8 +58,4 @@ public class BeanUtil {
         beanDescription.setFieldMapper(beanDesFieldMap);
         return beanDescription;
     }
-
-    public static void main(String[] args) {
-        BeanUtil.generate();
-    }
 }
